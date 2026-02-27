@@ -140,7 +140,8 @@ p {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   font-family: "Inter", sans-serif;
-  font-size: 1rem;
+  font-size: 16px; /* 16px to prevent iOS zoom-in */
+  min-height: 48px; /* 48px minimum height for comfortable touch targets */
   transition: var(--transition);
   background-color: var(--surface);
   color: var(--text-main);
@@ -166,7 +167,8 @@ p {
   border: none;
   font-family: "Inter", sans-serif;
   gap: 0.5rem;
-  font-size: 0.8125rem;
+  font-size: 0.875rem; /* slightly larger font size */
+  min-height: 48px; /* minimum height for touch targets */
 }
 
 @media print {
@@ -392,46 +394,71 @@ p {
   font-weight: 600;
 }
 
+/* Sidebar Toggle Architecture */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(3px);
+  z-index: 40;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.open {
+  display: block;
+  opacity: 1;
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 0.5rem;
+  background-color: var(--surface);
+  transition: var(--transition);
+}
+
+.mobile-menu-btn:hover {
+  background-color: var(--surface-hover);
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
   .dashboard-layout {
     flex-direction: column;
   }
 
-  .sidebar {
-    width: 100%;
-    padding: 1rem;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
+  .mobile-menu-btn {
+    display: flex;
     align-items: center;
-    min-width: 0;
+    justify-content: center;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    bottom: 0;
+    width: 280px;
+    z-index: 50;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-lg);
+    background-color: var(--surface); /* Ensure no transparency issues */
+  }
+
+  .sidebar.open {
+    left: 0;
   }
 
   .sidebar-logo {
-    margin-bottom: 0;
-  }
-
-  .nav-menu {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .nav-item {
-    font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
-  }
-
-  .sidebar button.btn-secondary {
-    width: 100% !important;
-    margin-top: 0 !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .main-content {

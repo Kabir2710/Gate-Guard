@@ -8,6 +8,7 @@ import {
   DoorOpen,
   LayoutDashboard,
   FileText,
+  Menu,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminEntryLogs from "../components/AdminEntryLogs";
@@ -18,6 +19,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [filterQuery, setFilterQuery] = useState("");
   const [activeTab, setActiveTab] = useState("Overview");
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -32,7 +34,13 @@ export default function AdminDashboard() {
 
   return (
     <div className="dashboard-layout">
-      <aside className="sidebar">
+      {/* Sidebar Overlay */}
+      <div
+        className={`sidebar-overlay ${isSidebarOpen ? "open" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      <aside className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
         <div className="sidebar-logo">
           <Database /> Admin Center
         </div>
@@ -43,6 +51,7 @@ export default function AdminDashboard() {
             onClick={(e) => {
               e.preventDefault();
               setActiveTab("Overview");
+              setSidebarOpen(false);
             }}
           >
             <LayoutDashboard size={20} /> Overview
@@ -53,6 +62,7 @@ export default function AdminDashboard() {
             onClick={(e) => {
               e.preventDefault();
               setActiveTab("Logs");
+              setSidebarOpen(false);
             }}
           >
             <DoorOpen size={20} /> Entry Logs
@@ -64,6 +74,7 @@ export default function AdminDashboard() {
             onClick={(e) => {
               e.preventDefault();
               setActiveTab("Guidelines");
+              setSidebarOpen(false);
             }}
           >
             <FileText size={20} /> Guidelines
@@ -80,9 +91,17 @@ export default function AdminDashboard() {
 
       <main className="main-content">
         <header className="header flex-between">
-          <div>
-            <h1>Central Dashboard</h1>
-            <p>System Overview & Access Logs</p>
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
+            <div>
+              <h1>Central Dashboard</h1>
+              <p>System Overview & Access Logs</p>
+            </div>
           </div>
           <div className="flex-center" style={{ gap: "1rem" }}>
             <button

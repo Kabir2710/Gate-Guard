@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { useAppContext } from "../AppContext";
-import { UserPlus, LogOut, Clock, ShieldCheck, FileText } from "lucide-react";
+import {
+  UserPlus,
+  LogOut,
+  Clock,
+  ShieldCheck,
+  FileText,
+  Menu,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import GuardDutyLog from "../components/GuardDutyLog";
 import GuardGuidelines from "../components/GuardGuidelines";
@@ -9,6 +16,7 @@ export default function GuardDashboard() {
   const { currentUser, entries, logout, addEntry } = useAppContext();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("New Entry");
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     guestName: "",
@@ -34,7 +42,13 @@ export default function GuardDashboard() {
 
   return (
     <div className="dashboard-layout">
-      <aside className="sidebar">
+      {/* Sidebar Overlay */}
+      <div
+        className={`sidebar-overlay ${isSidebarOpen ? "open" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      <aside className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
         <div className="sidebar-logo">
           <ShieldCheck /> Gate Guard
         </div>
@@ -45,6 +59,7 @@ export default function GuardDashboard() {
             onClick={(e) => {
               e.preventDefault();
               setActiveTab("New Entry");
+              setSidebarOpen(false);
             }}
           >
             <UserPlus size={20} /> New Entry
@@ -55,6 +70,7 @@ export default function GuardDashboard() {
             onClick={(e) => {
               e.preventDefault();
               setActiveTab("Duty Log");
+              setSidebarOpen(false);
             }}
           >
             <Clock size={20} /> Duty Log
@@ -65,6 +81,7 @@ export default function GuardDashboard() {
             onClick={(e) => {
               e.preventDefault();
               setActiveTab("Guidelines");
+              setSidebarOpen(false);
             }}
           >
             <FileText size={20} /> Guidelines
@@ -80,10 +97,18 @@ export default function GuardDashboard() {
       </aside>
 
       <main className="main-content">
-        <header className="header">
-          <div>
-            <h1>Guard Station</h1>
-            <p>Welcome, {currentUser?.name}</p>
+        <header className="header flex-between">
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
+            <div>
+              <h1>Guard Station</h1>
+              <p>Welcome, {currentUser?.name}</p>
+            </div>
           </div>
           <div className="user-profile">
             <div className="avatar">G</div>

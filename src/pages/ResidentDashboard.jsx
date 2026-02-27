@@ -7,6 +7,7 @@ import {
   Home,
   User,
   Bell,
+  Menu,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -17,6 +18,7 @@ export default function ResidentDashboard() {
   const { currentUser, entries, logout, updateEntryStatus } = useAppContext();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Approvals");
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -36,7 +38,13 @@ export default function ResidentDashboard() {
 
   return (
     <div className="dashboard-layout">
-      <aside className="sidebar">
+      {/* Sidebar Overlay */}
+      <div
+        className={`sidebar-overlay ${isSidebarOpen ? "open" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      <aside className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
         <div className="sidebar-logo">
           <Home /> Resident Portal
         </div>
@@ -47,6 +55,7 @@ export default function ResidentDashboard() {
             onClick={(e) => {
               e.preventDefault();
               setActiveTab("Approvals");
+              setSidebarOpen(false);
             }}
           >
             <Bell size={20} /> Approvals
@@ -57,6 +66,7 @@ export default function ResidentDashboard() {
             onClick={(e) => {
               e.preventDefault();
               setActiveTab("Visitors Log");
+              setSidebarOpen(false);
             }}
           >
             <User size={20} /> Visitors Log
@@ -72,10 +82,18 @@ export default function ResidentDashboard() {
       </aside>
 
       <main className="main-content">
-        <header className="header">
-          <div>
-            <h1>Dashboard</h1>
-            <p>House {currentUser?.houseId} - Status: Secure</p>
+        <header className="header flex-between">
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
+            <div>
+              <h1>Dashboard</h1>
+              <p>House {currentUser?.houseId} - Status: Secure</p>
+            </div>
           </div>
           <div className="user-profile">
             <div className="avatar">R</div>
