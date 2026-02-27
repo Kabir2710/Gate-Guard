@@ -91,13 +91,7 @@ export default function GuardDashboard() {
         </header>
 
         {activeTab === "New Entry" && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "2rem",
-            }}
-          >
+          <div className="grid-2-col-responsive">
             <div className="card animate-fade-in">
               <h3>New Guest Request</h3>
               <p style={{ marginBottom: "1.5rem", fontSize: "0.875rem" }}>
@@ -131,13 +125,7 @@ export default function GuardDashboard() {
                     placeholder="10-digit number"
                   />
                 </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "1rem",
-                  }}
-                >
+                <div className="grid-2-col-sm-responsive">
                   <div className="form-group">
                     <label className="form-label">Visiting House ID</label>
                     <input
@@ -197,13 +185,11 @@ export default function GuardDashboard() {
                   activeEntries.map((entry) => (
                     <div
                       key={entry.id}
+                      className="flex-between-responsive"
                       style={{
                         padding: "1rem",
                         border: "1px solid var(--border)",
                         borderRadius: "var(--radius-md)",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
                       }}
                     >
                       <div>

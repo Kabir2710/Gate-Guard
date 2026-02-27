@@ -39,16 +39,7 @@ export default function AdminManageResidents() {
     <div className="card animate-fade-in" style={{ padding: "2rem" }}>
       <h2>Manage Residents</h2>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr auto",
-          gap: "1rem",
-          marginBottom: "2rem",
-          marginTop: "1rem",
-        }}
-      >
+      <form onSubmit={handleSubmit} className="grid-3-col-auto-responsive">
         <input
           required
           className="form-input"

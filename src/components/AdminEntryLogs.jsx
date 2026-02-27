@@ -48,14 +48,7 @@ export default function AdminEntryLogs() {
         </button>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr 1fr",
-          gap: "1rem",
-          marginBottom: "2rem",
-        }}
-      >
+      <div className="grid-4-col-responsive">
         <input
           name="date"
           type="date"

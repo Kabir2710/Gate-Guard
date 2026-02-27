@@ -116,13 +116,10 @@ export default function ResidentDashboard() {
                   {pendingRequests.map((entry) => (
                     <div
                       key={entry.id}
-                      className="glass"
+                      className="glass flex-between-responsive"
                       style={{
                         padding: "1rem",
                         borderRadius: "var(--radius-md)",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
                       }}
                     >
                       <div>
@@ -136,7 +133,13 @@ export default function ResidentDashboard() {
                           {new Date(entry.entryTime).toLocaleTimeString()}
                         </span>
                       </div>
-                      <div style={{ display: "flex", gap: "1rem" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "1rem",
+                          flexWrap: "wrap",
+                        }}
+                      >
                         <button
                           onClick={() =>
                             updateEntryStatus(entry.id, "APPROVED")
