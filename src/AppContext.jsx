@@ -2,6 +2,8 @@ import { createContext, useState, useContext, useEffect } from "react";
 import { mockAuthService } from "./utils/authService";
 import { io } from "socket.io-client";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
@@ -19,51 +21,30 @@ export const AppProvider = ({ children }) => {
     }
   }, [currentUser]);
 
-  // Dummy Initial Data or Local Storage
-  const [entries, setEntries] = useState(() => {
-    const saved = localStorage.getItem("gateGuardEntries");
-    if (saved) return JSON.parse(saved);
-    return [
-      {
-        id: 1,
-        guestName: "John Doe",
-        mobile: "9876543210",
-        houseId: "101",
-        purpose: "Delivery",
-        status: "PENDING",
-        entryTime: new Date(Date.now() - 60000).toISOString(),
-      },
-    ];
-  });
-
+  const [entries, setEntries] = useState([]);
   const [socket, setSocket] = useState(null);
 
-  // Sync with Local Storage to mock a shared database
+  // Fetch true data from MongoDB Backend
   useEffect(() => {
-    localStorage.setItem("gateGuardEntries", JSON.stringify(entries));
-  }, [entries]);
-
-  // Listen for storage events to mock real-time updates across multiple tabs when using the same browser session
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === "gateGuardEntries" && e.newValue) {
-        setEntries(JSON.parse(e.newValue));
-      }
-      if (e.key === "gateGuardUser" && e.newValue) {
-        setCurrentUser(JSON.parse(e.newValue));
-      } else if (e.key === "gateGuardUser" && !e.newValue) {
-        setCurrentUser(null);
+    const fetchEntries = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/entries`);
+        if (response.ok) {
+          const data = await response.json();
+          setEntries(data);
+        }
+      } catch (err) {
+        console.error("Failed to load entries from server:", err);
       }
     };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+    fetchEntries();
+  }, [currentUser]); // Refresh entry list on user login status change
 
   // WebSocket initialization and cleanup
   useEffect(() => {
     if (currentUser) {
-      // Connect to the Socket server on port 4000
-      const newSocket = io("http://localhost:4000", {
+      // Connect to the Socket server on API_URL
+      const newSocket = io(API_URL, {
         auth: { user: currentUser },
       });
       setSocket(newSocket);
