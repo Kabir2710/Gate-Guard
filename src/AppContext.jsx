@@ -43,6 +43,22 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem("gateGuardEntries", JSON.stringify(entries));
   }, [entries]);
 
+  // Listen for storage events to mock real-time updates across multiple tabs when using the same browser session
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "gateGuardEntries" && e.newValue) {
+        setEntries(JSON.parse(e.newValue));
+      }
+      if (e.key === "gateGuardUser" && e.newValue) {
+        setCurrentUser(JSON.parse(e.newValue));
+      } else if (e.key === "gateGuardUser" && !e.newValue) {
+        setCurrentUser(null);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   // WebSocket initialization and cleanup
   useEffect(() => {
     if (currentUser) {
@@ -135,7 +151,7 @@ export const AppProvider = ({ children }) => {
     setEntries((prev) => [newEntry, ...prev]);
 
     // Emit event to Socket Server
-    if (socket && socket.connected) {
+    if (socket) {
       socket.emit("new_visitor", newEntry);
     }
   };
@@ -146,7 +162,7 @@ export const AppProvider = ({ children }) => {
     );
 
     // Emit event to Socket Server
-    if (socket && socket.connected) {
+    if (socket) {
       socket.emit("update_visitor_status", { id, status: newStatus });
     }
   };
