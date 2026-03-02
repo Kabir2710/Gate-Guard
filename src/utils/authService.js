@@ -1,7 +1,7 @@
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:4000";
 
 export const mockAuthService = {
   signup: async (role, name, email, password, houseId) => {
