@@ -29,10 +29,29 @@ export default function ResidentDashboard() {
   const pendingRequests = myEntries.filter((e) => e.status === "PENDING");
   const pastEntries = myEntries.filter((e) => e.status !== "PENDING");
 
-  // Play sound when new pending request comes in
+  // Play sound and trigger native notification when a new pending request comes in
   useEffect(() => {
     if (pendingRequests.length > 0) {
       playNotificationSound();
+
+      // Native Browser Notification
+      if ("Notification" in window) {
+        if (Notification.permission === "granted") {
+          new Notification("New Visitor Alert", {
+            body: `You have ${pendingRequests.length} guest(s) waiting at the gate for approval.`,
+            icon: "/favicon.ico",
+          });
+        } else if (Notification.permission !== "denied") {
+          Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+              new Notification("New Visitor Alert", {
+                body: `You have ${pendingRequests.length} guest(s) waiting at the gate for approval.`,
+                icon: "/favicon.ico",
+              });
+            }
+          });
+        }
+      }
     }
   }, [pendingRequests.length]);
 
@@ -100,87 +119,82 @@ export default function ResidentDashboard() {
           </div>
         </header>
 
-        {activeTab === "Approvals" && (
-          <>
-            {pendingRequests.length > 0 && (
-              <div
-                className="card animate-fade-in"
-                style={{
-                  borderColor: "var(--warning)",
-                  marginBottom: "2rem",
-                  backgroundColor: "var(--warning-bg)",
-                }}
-              >
-                <div className="flex-between">
-                  <div>
-                    <h3 style={{ color: "var(--text-main)" }}>
-                      ⚠️ Action Required: Visitor at Gate
-                    </h3>
-                    <p>
-                      You have {pendingRequests.length} guest(s) waiting for
-                      approval
-                    </p>
-                  </div>
-                </div>
+        {/* Global Notification Banner for Real-Time Approval Prompts */}
+        {pendingRequests.length > 0 && (
+          <div
+            className="card animate-fade-in"
+            style={{
+              borderColor: "var(--warning)",
+              marginBottom: "2rem",
+              backgroundColor: "var(--warning-bg)",
+            }}
+          >
+            <div className="flex-between">
+              <div>
+                <h3 style={{ color: "var(--text-main)" }}>
+                  ⚠️ Action Required: Visitor at Gate
+                </h3>
+                <p>
+                  You have {pendingRequests.length} guest(s) waiting for
+                  approval
+                </p>
+              </div>
+            </div>
 
+            <div
+              style={{
+                marginTop: "1rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+              }}
+            >
+              {pendingRequests.map((entry) => (
                 <div
+                  key={entry.id}
+                  className="glass flex-between-responsive"
                   style={{
-                    marginTop: "1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "1rem",
+                    padding: "1rem",
+                    borderRadius: "var(--radius-md)",
                   }}
                 >
-                  {pendingRequests.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="glass flex-between-responsive"
-                      style={{
-                        padding: "1rem",
-                        borderRadius: "var(--radius-md)",
-                      }}
+                  <div>
+                    <h4 style={{ fontSize: "1.25rem" }}>{entry.guestName}</h4>
+                    <p style={{ fontWeight: "500" }}>
+                      Purpose: {entry.purpose} • Ph: {entry.mobile}
+                    </p>
+                    <span style={{ fontSize: "0.875rem" }}>
+                      {new Date(entry.entryTime).toLocaleTimeString()}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "1rem",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <button
+                      onClick={() => updateEntryStatus(entry.id, "APPROVED")}
+                      className="btn btn-success"
                     >
-                      <div>
-                        <h4 style={{ fontSize: "1.25rem" }}>
-                          {entry.guestName}
-                        </h4>
-                        <p style={{ fontWeight: "500" }}>
-                          Purpose: {entry.purpose} • Ph: {entry.mobile}
-                        </p>
-                        <span style={{ fontSize: "0.875rem" }}>
-                          {new Date(entry.entryTime).toLocaleTimeString()}
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "1rem",
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <button
-                          onClick={() =>
-                            updateEntryStatus(entry.id, "APPROVED")
-                          }
-                          className="btn btn-success"
-                        >
-                          <CheckCircle size={18} /> Approve
-                        </button>
-                        <button
-                          onClick={() =>
-                            updateEntryStatus(entry.id, "REJECTED")
-                          }
-                          className="btn btn-danger"
-                        >
-                          <XCircle size={18} /> Reject
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                      <CheckCircle size={18} /> Approve
+                    </button>
+                    <button
+                      onClick={() => updateEntryStatus(entry.id, "REJECTED")}
+                      className="btn btn-danger"
+                    >
+                      <XCircle size={18} /> Reject
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
+          </div>
+        )}
 
+        {activeTab === "Approvals" && (
+          <>
             <div className="card animate-fade-in">
               <h3 style={{ marginBottom: "1.5rem" }}>Recent Visitors</h3>
               {pastEntries.length === 0 ? (
