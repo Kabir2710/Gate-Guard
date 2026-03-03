@@ -1,6 +1,33 @@
+let audioCtx = null;
+
+export const unlockAudio = () => {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+    }
+    // Play silent buffer to unlock audio engine on iOS/Android
+    const buffer = audioCtx.createBuffer(1, 1, 22050);
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+    source.start(0);
+  } catch (error) {
+    console.warn("Audio Context unlock failed:", error);
+  }
+};
+
 export const playNotificationSound = () => {
   try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+    }
+
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
@@ -20,6 +47,11 @@ export const playNotificationSound = () => {
 
     oscillator.start(audioCtx.currentTime);
     oscillator.stop(audioCtx.currentTime + 1);
+
+    // Vibrate device if supported (Android)
+    if ("vibrate" in navigator) {
+      navigator.vibrate([300, 100, 300, 100, 300]);
+    }
   } catch (error) {
     console.warn("Audio Context failed to play:", error);
   }

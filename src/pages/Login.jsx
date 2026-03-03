@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../AppContext";
 import { Shield } from "lucide-react";
+import { unlockAudio } from "../utils/audio";
 
 export default function Login() {
   const [isSignup, setIsSignup] = useState(false);
@@ -21,6 +22,8 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    unlockAudio(); // Unlock audio context on first user interaction to bypass mobile browser limits
+
     setError("");
     setSuccessMsg("");
     setLoading(true);

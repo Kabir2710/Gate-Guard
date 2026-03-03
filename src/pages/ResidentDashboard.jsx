@@ -10,7 +10,7 @@ import {
   Menu,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ResidentVisitorLog from "../components/ResidentVisitorLog";
 import { playNotificationSound } from "../utils/audio";
 
@@ -29,9 +29,11 @@ export default function ResidentDashboard() {
   const pendingRequests = myEntries.filter((e) => e.status === "PENDING");
   const pastEntries = myEntries.filter((e) => e.status !== "PENDING");
 
+  const prevPendingCount = useRef(0);
+
   // Play sound and trigger native notification when a new pending request comes in
   useEffect(() => {
-    if (pendingRequests.length > 0) {
+    if (pendingRequests.length > prevPendingCount.current) {
       playNotificationSound();
 
       // Native Browser Notification
@@ -53,6 +55,8 @@ export default function ResidentDashboard() {
         }
       }
     }
+
+    prevPendingCount.current = pendingRequests.length;
   }, [pendingRequests.length]);
 
   return (
