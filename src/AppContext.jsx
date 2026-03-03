@@ -1,5 +1,7 @@
 import { createContext, useState, useContext, useEffect } from "react";
 import { mockAuthService } from "./utils/authService";
+import { db } from "./firebase";
+import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import { io } from "socket.io-client";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:4000";
@@ -24,17 +26,22 @@ export const AppProvider = ({ children }) => {
   const [entries, setEntries] = useState([]);
   const [socket, setSocket] = useState(null);
 
-  // Fetch true data from MongoDB Backend
+  // Fetch true data from Firestore instead of fetch()
   useEffect(() => {
     const fetchEntries = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/entries`);
-        if (response.ok) {
-          const data = await response.json();
-          setEntries(data);
-        }
+        const entriesRef = collection(db, "entries");
+        const q = query(entriesRef, orderBy("id", "desc"));
+        const querySnapshot = await getDocs(q);
+
+        const data = [];
+        querySnapshot.forEach((doc) => {
+          data.push(doc.data());
+        });
+
+        setEntries(data);
       } catch (err) {
-        console.error("Failed to load entries from server:", err);
+        console.error("Failed to load entries from Firestore:", err);
       }
     };
     fetchEntries();
