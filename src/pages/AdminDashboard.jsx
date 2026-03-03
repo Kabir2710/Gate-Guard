@@ -91,7 +91,7 @@ export default function AdminDashboard() {
 
       <main className="main-content">
         <header className="header flex-between">
-          <div style={{ display: "flex", gap: "1rem" }}>
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
             <button
               className="mobile-menu-btn"
               onClick={() => setSidebarOpen(true)}
@@ -99,11 +99,11 @@ export default function AdminDashboard() {
               <Menu size={24} />
             </button>
             <div>
-              <h1>Central Dashboard</h1>
-              <p>System Overview & Access Logs</p>
+              <h1 style={{ fontSize: "1.5rem" }}>Central Dashboard</h1>
+              <p style={{ fontSize: "0.875rem" }}>System Overview</p>
             </div>
           </div>
-          <div className="flex-center" style={{ gap: "1rem" }}>
+          <div className="flex-center header-actions" style={{ gap: "1rem" }}>
             <button
               className="btn btn-primary"
               onClick={() => {
@@ -115,7 +115,7 @@ export default function AdminDashboard() {
                 }
               }}
             >
-              <Download size={18} /> Export PDF
+              <Download size={18} /> Export
             </button>
             <div className="avatar">A</div>
           </div>

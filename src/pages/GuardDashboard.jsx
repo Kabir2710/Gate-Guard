@@ -98,7 +98,7 @@ export default function GuardDashboard() {
 
       <main className="main-content">
         <header className="header flex-between">
-          <div style={{ display: "flex", gap: "1rem" }}>
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
             <button
               className="mobile-menu-btn"
               onClick={() => setSidebarOpen(true)}
@@ -106,8 +106,10 @@ export default function GuardDashboard() {
               <Menu size={24} />
             </button>
             <div>
-              <h1>Guard Station</h1>
-              <p>Welcome, {currentUser?.name}</p>
+              <h1 style={{ fontSize: "1.5rem" }}>Guard Station</h1>
+              <p style={{ fontSize: "0.875rem" }}>
+                Welcome, {currentUser?.name}
+              </p>
             </div>
           </div>
           <div className="user-profile">

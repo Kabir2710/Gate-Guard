@@ -102,7 +102,7 @@ export default function ResidentDashboard() {
 
       <main className="main-content">
         <header className="header flex-between">
-          <div style={{ display: "flex", gap: "1rem" }}>
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
             <button
               className="mobile-menu-btn"
               onClick={() => setSidebarOpen(true)}
@@ -110,8 +110,10 @@ export default function ResidentDashboard() {
               <Menu size={24} />
             </button>
             <div>
-              <h1>Dashboard</h1>
-              <p>House {currentUser?.houseId} - Status: Secure</p>
+              <h1 style={{ fontSize: "1.5rem" }}>Dashboard</h1>
+              <p style={{ fontSize: "0.875rem" }}>
+                House {currentUser?.houseId} - Secure
+              </p>
             </div>
           </div>
           <div className="user-profile">
@@ -170,19 +172,22 @@ export default function ResidentDashboard() {
                   <div
                     style={{
                       display: "flex",
-                      gap: "1rem",
-                      flexWrap: "wrap",
+                      gap: "0.5rem",
+                      width: "100%",
+                      justifyContent: "flex-end",
                     }}
                   >
                     <button
                       onClick={() => updateEntryStatus(entry.id, "APPROVED")}
                       className="btn btn-success"
+                      style={{ flex: 1, padding: "0.5rem" }}
                     >
                       <CheckCircle size={18} /> Approve
                     </button>
                     <button
                       onClick={() => updateEntryStatus(entry.id, "REJECTED")}
                       className="btn btn-danger"
+                      style={{ flex: 1, padding: "0.5rem" }}
                     >
                       <XCircle size={18} /> Reject
                     </button>
