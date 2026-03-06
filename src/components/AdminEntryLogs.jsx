@@ -9,9 +9,12 @@ export default function AdminEntryLogs() {
     status: "",
     guestName: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const handleFilterChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
+    setCurrentPage(1);
   };
 
   const filteredLogs = entries.filter((log) => {
@@ -31,11 +34,36 @@ export default function AdminEntryLogs() {
     return matchHouse && matchStatus && matchName && matchDate;
   });
 
-  const exportPDF = () => {
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedLogs = filteredLogs.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
+
+  const exportCSV = () => {
     try {
       requireAdmin();
-      // This enforces backend-level restriction logic inside our mocked service.
-      window.print();
+      const headers = ["Date", "Time", "Guest", "House", "Status"];
+      const csvRows = [headers.join(",")];
+
+      filteredLogs.forEach((log) => {
+        const dt = new Date(log.entryTime);
+        const date = dt.toLocaleDateString();
+        const time = dt.toLocaleTimeString();
+        const guest = `"${log.guestName}"`;
+        const house = `"${log.houseId}"`;
+        const status = log.status;
+        csvRows.push([date, time, guest, house, status].join(","));
+      });
+
+      const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "entry_logs.csv";
+      a.click();
+      window.URL.revokeObjectURL(url);
     } catch (e) {
       alert(e.message);
     }
@@ -45,8 +73,8 @@ export default function AdminEntryLogs() {
     <div className="card animate-fade-in" style={{ padding: "2rem" }}>
       <div className="flex-between" style={{ marginBottom: "1.5rem" }}>
         <h2>Complete Entry Logs</h2>
-        <button onClick={exportPDF} className="btn btn-secondary">
-          Download PDF
+        <button onClick={exportCSV} className="btn btn-secondary">
+          Export CSV
         </button>
       </div>
 
@@ -93,7 +121,7 @@ export default function AdminEntryLogs() {
           </tr>
         </thead>
         <tbody>
-          {filteredLogs.map((log) => (
+          {paginatedLogs.map((log) => (
             <tr
               key={log.id}
               style={{ borderBottom: "1px solid var(--border)" }}
@@ -110,7 +138,7 @@ export default function AdminEntryLogs() {
               </td>
             </tr>
           ))}
-          {filteredLogs.length === 0 && (
+          {paginatedLogs.length === 0 && (
             <tr>
               <td
                 colSpan="4"
@@ -122,6 +150,35 @@ export default function AdminEntryLogs() {
           )}
         </tbody>
       </table>
+
+      {totalPages > 1 && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "1.5rem",
+          }}
+        >
+          <button
+            className="btn btn-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Previous
+          </button>
+          <span style={{ fontSize: "0.875rem" }}>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="btn btn-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

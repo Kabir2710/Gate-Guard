@@ -21,6 +21,7 @@ export default function ResidentDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Approvals");
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -109,25 +110,7 @@ export default function ResidentDashboard() {
           >
             <User size={20} /> Visitors Log
           </a>
-          <a
-            href="#"
-            className={`nav-item ${activeTab === "Profile" ? "active" : ""}`}
-            onClick={(e) => {
-              e.preventDefault();
-              setActiveTab("Profile");
-              setSidebarOpen(false);
-            }}
-          >
-            <Settings size={20} /> Profile
-          </a>
         </nav>
-        <button
-          className="btn btn-secondary"
-          onClick={handleLogout}
-          style={{ marginTop: "auto", width: "100%" }}
-        >
-          <LogOut size={18} /> Logout
-        </button>
       </aside>
 
       <main className="main-content">
@@ -146,8 +129,53 @@ export default function ResidentDashboard() {
               </p>
             </div>
           </div>
-          <div className="user-profile">
-            <div className="avatar">R</div>
+          <div className="user-profile" style={{ position: "relative" }}>
+            <div
+              className="avatar"
+              onClick={() => setShowDropdown(!showDropdown)}
+              style={{ cursor: "pointer" }}
+            >
+              R
+            </div>
+            {showDropdown && (
+              <div
+                className="card animate-fade-in"
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  right: 0,
+                  marginTop: "0.5rem",
+                  padding: "0.5rem",
+                  zIndex: 10,
+                  minWidth: "150px",
+                }}
+              >
+                <button
+                  className="btn"
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    marginBottom: "0.5rem",
+                    backgroundColor: "transparent",
+                    color: "var(--text-main)",
+                    border: "1px solid var(--border)",
+                  }}
+                  onClick={() => {
+                    setActiveTab("Profile");
+                    setShowDropdown(false);
+                  }}
+                >
+                  Edit Profile
+                </button>
+                <button
+                  className="btn btn-danger"
+                  style={{ width: "100%", textAlign: "left" }}
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </header>
 

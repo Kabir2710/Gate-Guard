@@ -29,6 +29,9 @@ export default function SuperAdminDashboard() {
   const [societies, setSocieties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Societies");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   // Form State
   const [showForm, setShowForm] = useState(false);
@@ -160,24 +163,7 @@ export default function SuperAdminDashboard() {
           >
             <Building size={20} /> Societies
           </a>
-          <a
-            href="#"
-            className={`nav-item ${activeTab === "Profile" ? "active" : ""}`}
-            onClick={(e) => {
-              e.preventDefault();
-              setActiveTab("Profile");
-            }}
-          >
-            <Settings size={20} /> Profile
-          </a>
         </nav>
-        <button
-          className="btn btn-secondary"
-          onClick={handleLogout}
-          style={{ marginTop: "auto", width: "100%" }}
-        >
-          <LogOut size={18} /> Logout
-        </button>
       </aside>
 
       <main className="main-content">
@@ -193,7 +179,54 @@ export default function SuperAdminDashboard() {
             >
               <Plus size={18} /> Add Society
             </button>
-            <div className="avatar">SA</div>
+            <div className="user-profile" style={{ position: "relative" }}>
+              <div
+                className="avatar"
+                onClick={() => setShowDropdown(!showDropdown)}
+                style={{ cursor: "pointer" }}
+              >
+                SA
+              </div>
+              {showDropdown && (
+                <div
+                  className="card animate-fade-in"
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    right: 0,
+                    marginTop: "0.5rem",
+                    padding: "0.5rem",
+                    zIndex: 10,
+                    minWidth: "150px",
+                  }}
+                >
+                  <button
+                    className="btn"
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      marginBottom: "0.5rem",
+                      backgroundColor: "transparent",
+                      color: "var(--text-main)",
+                      border: "1px solid var(--border)",
+                    }}
+                    onClick={() => {
+                      setActiveTab("Profile");
+                      setShowDropdown(false);
+                    }}
+                  >
+                    Edit Profile
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    style={{ width: "100%", textAlign: "left" }}
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
@@ -278,51 +311,59 @@ export default function SuperAdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {societies.map((soc) => (
-                  <tr
-                    key={soc.id}
-                    style={{ borderBottom: "1px solid var(--border)" }}
-                  >
-                    <td style={{ padding: "1rem 0" }}>
-                      <div style={{ fontWeight: "500" }}>{soc.name}</div>
-                      <div
-                        style={{
-                          fontSize: "0.875rem",
-                          color: "var(--text-muted)",
-                        }}
-                      >
-                        {soc.email}
-                      </div>
-                    </td>
-                    <td style={{ padding: "1rem 0", fontWeight: "bold" }}>
-                      {soc.societyCode}
-                    </td>
-                    <td style={{ padding: "1rem 0" }}>
-                      <Activity size={14} style={{ marginRight: "0.25rem" }} />
-                      {soc.guardCount}
-                    </td>
-                    <td style={{ padding: "1rem 0" }}>
-                      <Users size={14} style={{ marginRight: "0.25rem" }} />
-                      {soc.residentCount}
-                    </td>
-                    <td style={{ padding: "1rem 0" }}>
-                      <button
-                        className={`btn ${soc.isActive === false ? "btn-success" : "btn-danger"}`}
-                        onClick={() =>
-                          handleToggleSubAdmin(soc.uid, soc.isActive)
-                        }
-                      >
-                        {soc.isActive === false ? (
-                          "Activate"
-                        ) : (
-                          <>
-                            <Trash2 size={16} /> Disable
-                          </>
-                        )}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {societies
+                  .slice(
+                    (currentPage - 1) * itemsPerPage,
+                    currentPage * itemsPerPage,
+                  )
+                  .map((soc) => (
+                    <tr
+                      key={soc.id}
+                      style={{ borderBottom: "1px solid var(--border)" }}
+                    >
+                      <td style={{ padding: "1rem 0" }}>
+                        <div style={{ fontWeight: "500" }}>{soc.name}</div>
+                        <div
+                          style={{
+                            fontSize: "0.875rem",
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          {soc.email}
+                        </div>
+                      </td>
+                      <td style={{ padding: "1rem 0", fontWeight: "bold" }}>
+                        {soc.societyCode}
+                      </td>
+                      <td style={{ padding: "1rem 0" }}>
+                        <Activity
+                          size={14}
+                          style={{ marginRight: "0.25rem" }}
+                        />
+                        {soc.guardCount}
+                      </td>
+                      <td style={{ padding: "1rem 0" }}>
+                        <Users size={14} style={{ marginRight: "0.25rem" }} />
+                        {soc.residentCount}
+                      </td>
+                      <td style={{ padding: "1rem 0" }}>
+                        <button
+                          className={`btn ${soc.isActive === false ? "btn-success" : "btn-danger"}`}
+                          onClick={() =>
+                            handleToggleSubAdmin(soc.uid, soc.isActive)
+                          }
+                        >
+                          {soc.isActive === false ? (
+                            "Activate"
+                          ) : (
+                            <>
+                              <Trash2 size={16} /> Disable
+                            </>
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
                 {societies.length === 0 && (
                   <tr>
                     <td
@@ -335,6 +376,38 @@ export default function SuperAdminDashboard() {
                 )}
               </tbody>
             </table>
+          )}
+
+          {Math.ceil(societies.length / itemsPerPage) > 1 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: "1.5rem",
+              }}
+            >
+              <button
+                className="btn btn-secondary"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+              >
+                Previous
+              </button>
+              <span style={{ fontSize: "0.875rem" }}>
+                Page {currentPage} of{" "}
+                {Math.ceil(societies.length / itemsPerPage)}
+              </span>
+              <button
+                className="btn btn-secondary"
+                disabled={
+                  currentPage === Math.ceil(societies.length / itemsPerPage)
+                }
+                onClick={() => setCurrentPage((p) => p + 1)}
+              >
+                Next
+              </button>
+            </div>
           )}
         </div>
 

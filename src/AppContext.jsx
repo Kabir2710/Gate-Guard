@@ -62,6 +62,30 @@ export const AppProvider = ({ children }) => {
     };
   }, [currentUser]); // Refresh entry list on user login status change
 
+  // Real-time listener for user deactivation
+  useEffect(() => {
+    if (!currentUser?.uid || currentUser.role === "SUPERADMIN") return;
+
+    let unsubscribeUser;
+    try {
+      const userRef = doc(db, "users", currentUser.uid);
+      unsubscribeUser = onSnapshot(userRef, (docSnap) => {
+        if (docSnap.exists()) {
+          if (docSnap.data().isActive === false) {
+            alert("Your account has been deactivated by Super Admin.");
+            logout();
+          }
+        }
+      });
+    } catch (e) {
+      console.warn("User listener error:", e);
+    }
+
+    return () => {
+      if (unsubscribeUser) unsubscribeUser();
+    };
+  }, [currentUser?.uid]);
+
   const requireAdmin = () => {
     // Validates from cryptographically secure JWT simulation
     const session = mockAuthService.verifySession();

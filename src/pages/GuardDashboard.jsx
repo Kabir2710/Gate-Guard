@@ -7,18 +7,20 @@ import {
   ShieldCheck,
   FileText,
   Menu,
-  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import GuardDutyLog from "../components/GuardDutyLog";
 import GuardGuidelines from "../components/GuardGuidelines";
 import EditProfile from "../components/EditProfile";
+import { db } from "../firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 export default function GuardDashboard() {
   const { currentUser, entries, logout, addEntry } = useAppContext();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("New Entry");
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const [formData, setFormData] = useState({
     guestName: "",
@@ -32,11 +34,29 @@ export default function GuardDashboard() {
     navigate("/");
   };
 
-  const handleNewEntry = (e) => {
+  const handleNewEntry = async (e) => {
     e.preventDefault();
     if (!formData.guestName || !formData.houseId) return;
-    addEntry({ ...formData, societyCode: currentUser?.societyCode });
-    setFormData({ guestName: "", mobile: "", houseId: "", purpose: "" });
+
+    try {
+      const q = query(
+        collection(db, "users"),
+        where("role", "==", "RESIDENT"),
+        where("societyCode", "==", currentUser?.societyCode),
+        where("houseId", "==", formData.houseId),
+      );
+      const snap = await getDocs(q);
+
+      if (snap.empty) {
+        alert("No resident found for this house number in your society.");
+        return;
+      }
+
+      addEntry({ ...formData, societyCode: currentUser?.societyCode });
+      setFormData({ guestName: "", mobile: "", houseId: "", purpose: "" });
+    } catch (err) {
+      alert("Error checking house number: " + err.message);
+    }
   };
 
   // Active entries (PENDING or approved/rejected recently)
@@ -90,25 +110,7 @@ export default function GuardDashboard() {
           >
             <FileText size={20} /> Guidelines
           </a>
-          <a
-            href="#"
-            className={`nav-item ${activeTab === "Profile" ? "active" : ""}`}
-            onClick={(e) => {
-              e.preventDefault();
-              setActiveTab("Profile");
-              setSidebarOpen(false);
-            }}
-          >
-            <Settings size={20} /> Profile
-          </a>
         </nav>
-        <button
-          className="btn btn-secondary"
-          onClick={handleLogout}
-          style={{ marginTop: "auto", width: "100%" }}
-        >
-          <LogOut size={18} /> Logout
-        </button>
       </aside>
 
       <main className="main-content">
@@ -128,8 +130,53 @@ export default function GuardDashboard() {
             </div>
           </div>
           <div className="flex-center header-actions" style={{ gap: "1rem" }}>
-            <div className="user-profile">
-              <div className="avatar">G</div>
+            <div className="user-profile" style={{ position: "relative" }}>
+              <div
+                className="avatar"
+                onClick={() => setShowDropdown(!showDropdown)}
+                style={{ cursor: "pointer" }}
+              >
+                G
+              </div>
+              {showDropdown && (
+                <div
+                  className="card animate-fade-in"
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    right: 0,
+                    marginTop: "0.5rem",
+                    padding: "0.5rem",
+                    zIndex: 10,
+                    minWidth: "150px",
+                  }}
+                >
+                  <button
+                    className="btn"
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      marginBottom: "0.5rem",
+                      backgroundColor: "transparent",
+                      color: "var(--text-main)",
+                      border: "1px solid var(--border)",
+                    }}
+                    onClick={() => {
+                      setActiveTab("Profile");
+                      setShowDropdown(false);
+                    }}
+                  >
+                    Edit Profile
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    style={{ width: "100%", textAlign: "left" }}
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>

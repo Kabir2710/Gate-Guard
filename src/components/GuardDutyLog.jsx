@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAppContext } from "../AppContext";
 import { useExtensionContext } from "../ExtensionContext";
 
@@ -6,11 +6,46 @@ export default function GuardDutyLog() {
   const { entries, currentUser } = useAppContext();
   const { deletedLogs, softDeleteLog } = useExtensionContext();
 
-  // Filter out any logs the guard has softly deleted
-  const visibleLogs = entries.filter(
-    (log) =>
-      !deletedLogs.includes(log.id) &&
-      log.societyCode === currentUser?.societyCode,
+  const [filters, setFilters] = useState({
+    date: "",
+    houseNo: "",
+    status: "",
+    guestName: "",
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  const handleFilterChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+    setCurrentPage(1);
+  };
+
+  const filteredLogs = entries.filter((log) => {
+    if (
+      deletedLogs.includes(log.id) ||
+      log.societyCode !== currentUser?.societyCode
+    )
+      return false;
+
+    const matchHouse = filters.houseNo
+      ? log.houseId.includes(filters.houseNo)
+      : true;
+    const matchStatus = filters.status ? log.status === filters.status : true;
+    const matchName = filters.guestName
+      ? log.guestName.toLowerCase().includes(filters.guestName.toLowerCase())
+      : true;
+    const matchDate = filters.date
+      ? new Date(log.entryTime).toISOString().split("T")[0] === filters.date
+      : true;
+
+    return matchHouse && matchStatus && matchName && matchDate;
+  });
+
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedLogs = filteredLogs.slice(
+    startIndex,
+    startIndex + itemsPerPage,
   );
 
   return (
@@ -20,6 +55,37 @@ export default function GuardDutyLog() {
         Review your processed entry logs. You can remove logs from this view
         without affecting the master records.
       </p>
+
+      <div className="grid-4-col-responsive" style={{ marginBottom: "1rem" }}>
+        <input
+          name="date"
+          type="date"
+          className="form-input"
+          onChange={handleFilterChange}
+        />
+        <input
+          name="houseNo"
+          placeholder="House No..."
+          className="form-input"
+          onChange={handleFilterChange}
+        />
+        <select
+          name="status"
+          className="form-select"
+          onChange={handleFilterChange}
+        >
+          <option value="">All Statuses</option>
+          <option value="PENDING">PENDING</option>
+          <option value="APPROVED">APPROVED</option>
+          <option value="REJECTED">REJECTED</option>
+        </select>
+        <input
+          name="guestName"
+          placeholder="Guest Name..."
+          className="form-input"
+          onChange={handleFilterChange}
+        />
+      </div>
 
       <table
         style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}
@@ -34,7 +100,7 @@ export default function GuardDutyLog() {
           </tr>
         </thead>
         <tbody>
-          {visibleLogs.map((log) => (
+          {paginatedLogs.map((log) => (
             <tr
               key={log.id}
               style={{ borderBottom: "1px solid var(--border)" }}
@@ -72,7 +138,7 @@ export default function GuardDutyLog() {
               </td>
             </tr>
           ))}
-          {visibleLogs.length === 0 && (
+          {paginatedLogs.length === 0 && (
             <tr>
               <td
                 colSpan="5"
@@ -84,6 +150,35 @@ export default function GuardDutyLog() {
           )}
         </tbody>
       </table>
+
+      {totalPages > 1 && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "1.5rem",
+          }}
+        >
+          <button
+            className="btn btn-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Previous
+          </button>
+          <span style={{ fontSize: "0.875rem" }}>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="btn btn-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

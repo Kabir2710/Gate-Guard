@@ -24,6 +24,9 @@ export default function AdminDashboard() {
   const [filterQuery, setFilterQuery] = useState("");
   const [activeTab, setActiveTab] = useState("Overview");
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const handleLogout = () => {
     logout();
@@ -109,25 +112,7 @@ export default function AdminDashboard() {
           >
             <FileText size={20} /> Guidelines
           </a>
-          <a
-            href="#"
-            className={`nav-item ${activeTab === "Profile" ? "active" : ""}`}
-            onClick={(e) => {
-              e.preventDefault();
-              setActiveTab("Profile");
-              setSidebarOpen(false);
-            }}
-          >
-            <Settings size={20} /> Profile
-          </a>
         </nav>
-        <button
-          className="btn btn-secondary"
-          onClick={handleLogout}
-          style={{ marginTop: "auto", width: "100%" }}
-        >
-          <LogOut size={18} /> Logout
-        </button>
       </aside>
 
       <main className="main-content">
@@ -158,7 +143,54 @@ export default function AdminDashboard() {
             >
               <Download size={18} /> Export
             </button>
-            <div className="avatar">A</div>
+            <div className="user-profile" style={{ position: "relative" }}>
+              <div
+                className="avatar"
+                onClick={() => setShowDropdown(!showDropdown)}
+                style={{ cursor: "pointer" }}
+              >
+                A
+              </div>
+              {showDropdown && (
+                <div
+                  className="card animate-fade-in"
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    right: 0,
+                    marginTop: "0.5rem",
+                    padding: "0.5rem",
+                    zIndex: 10,
+                    minWidth: "150px",
+                  }}
+                >
+                  <button
+                    className="btn"
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      marginBottom: "0.5rem",
+                      backgroundColor: "transparent",
+                      color: "var(--text-main)",
+                      border: "1px solid var(--border)",
+                    }}
+                    onClick={() => {
+                      setActiveTab("Profile");
+                      setShowDropdown(false);
+                    }}
+                  >
+                    Edit Profile
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    style={{ width: "100%", textAlign: "left" }}
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
@@ -228,7 +260,10 @@ export default function AdminDashboard() {
                   className="form-input"
                   placeholder="Search by ID or Name..."
                   value={filterQuery}
-                  onChange={(e) => setFilterQuery(e.target.value)}
+                  onChange={(e) => {
+                    setFilterQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   style={{ width: "300px" }}
                 />
               </div>
@@ -249,47 +284,95 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredEntries.map((entry) => (
-                    <tr
-                      key={entry.id}
-                      style={{ borderBottom: "1px solid var(--border)" }}
-                    >
-                      <td style={{ padding: "1rem 0" }}>
-                        <div style={{ fontWeight: "500" }}>
-                          {entry.guestName}
-                        </div>
-                        <div
+                  {filteredEntries
+                    .slice(
+                      (currentPage - 1) * itemsPerPage,
+                      currentPage * itemsPerPage,
+                    )
+                    .map((entry) => (
+                      <tr
+                        key={entry.id}
+                        style={{ borderBottom: "1px solid var(--border)" }}
+                      >
+                        <td style={{ padding: "1rem 0" }}>
+                          <div style={{ fontWeight: "500" }}>
+                            {entry.guestName}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "0.875rem",
+                              color: "var(--text-muted)",
+                            }}
+                          >
+                            {entry.mobile} • {entry.purpose}
+                          </div>
+                        </td>
+                        <td style={{ padding: "1rem 0", fontWeight: "bold" }}>
+                          {entry.houseId}
+                        </td>
+                        <td
                           style={{
+                            padding: "1rem 0",
                             fontSize: "0.875rem",
                             color: "var(--text-muted)",
                           }}
                         >
-                          {entry.mobile} • {entry.purpose}
-                        </div>
-                      </td>
-                      <td style={{ padding: "1rem 0", fontWeight: "bold" }}>
-                        {entry.houseId}
-                      </td>
+                          {new Date(entry.entryTime).toLocaleString()}
+                        </td>
+                        <td style={{ padding: "1rem 0" }}>
+                          <span
+                            className={`badge badge-${entry.status.toLowerCase()}`}
+                          >
+                            {entry.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  {filteredEntries.length === 0 && (
+                    <tr>
                       <td
-                        style={{
-                          padding: "1rem 0",
-                          fontSize: "0.875rem",
-                          color: "var(--text-muted)",
-                        }}
+                        colSpan="4"
+                        style={{ padding: "1rem 0", textAlign: "center" }}
                       >
-                        {new Date(entry.entryTime).toLocaleString()}
-                      </td>
-                      <td style={{ padding: "1rem 0" }}>
-                        <span
-                          className={`badge badge-${entry.status.toLowerCase()}`}
-                        >
-                          {entry.status}
-                        </span>
+                        No logs found.
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
+
+              {Math.ceil(filteredEntries.length / itemsPerPage) > 1 && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginTop: "1.5rem",
+                  }}
+                >
+                  <button
+                    className="btn btn-secondary"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                  >
+                    Previous
+                  </button>
+                  <span style={{ fontSize: "0.875rem" }}>
+                    Page {currentPage} of{" "}
+                    {Math.ceil(filteredEntries.length / itemsPerPage)}
+                  </span>
+                  <button
+                    className="btn btn-secondary"
+                    disabled={
+                      currentPage ===
+                      Math.ceil(filteredEntries.length / itemsPerPage)
+                    }
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}
