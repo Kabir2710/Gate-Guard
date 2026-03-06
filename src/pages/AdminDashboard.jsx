@@ -9,12 +9,14 @@ import {
   LayoutDashboard,
   FileText,
   Menu,
+  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminEntryLogs from "../components/AdminEntryLogs";
 import AdminGuidelines from "../components/AdminGuidelines";
 import AdminManageResidents from "../components/AdminManageResidents";
 import AdminManageGuards from "../components/AdminManageGuards";
+import EditProfile from "../components/EditProfile";
 
 export default function AdminDashboard() {
   const { entries, logout, requireAdmin, currentUser } = useAppContext();
@@ -106,6 +108,17 @@ export default function AdminDashboard() {
             }}
           >
             <FileText size={20} /> Guidelines
+          </a>
+          <a
+            href="#"
+            className={`nav-item ${activeTab === "Profile" ? "active" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab("Profile");
+              setSidebarOpen(false);
+            }}
+          >
+            <Settings size={20} /> Profile
           </a>
         </nav>
         <button
@@ -288,6 +301,8 @@ export default function AdminDashboard() {
         {activeTab === "Guards" && <AdminManageGuards />}
 
         {activeTab === "Guidelines" && <AdminGuidelines />}
+
+        {activeTab === "Profile" && <EditProfile />}
       </main>
     </div>
   );

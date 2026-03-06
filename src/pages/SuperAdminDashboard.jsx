@@ -6,7 +6,7 @@ import {
   query,
   where,
   getDocs,
-  deleteDoc,
+  updateDoc,
   doc,
 } from "firebase/firestore";
 import {
@@ -17,8 +17,10 @@ import {
   LogOut,
   Plus,
   Trash2,
+  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import EditProfile from "../components/EditProfile";
 
 export default function SuperAdminDashboard() {
   const { logout, signup } = useAppContext();
@@ -26,6 +28,7 @@ export default function SuperAdminDashboard() {
 
   const [societies, setSocieties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("Societies");
 
   // Form State
   const [showForm, setShowForm] = useState(false);
@@ -116,15 +119,19 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  const handleDeleteSubAdmin = async (adminId) => {
+  const handleToggleSubAdmin = async (adminId, currentIsActive) => {
     if (
       !window.confirm(
-        "Are you sure you want to delete this Admin? (Firebase auth user cannot easily be deleted here, but their access will be revoked)",
+        currentIsActive !== false
+          ? "Are you sure you want to disable this Admin? They will be unable to login."
+          : "Are you sure you want to activate this Admin?",
       )
     )
       return;
     try {
-      await deleteDoc(doc(db, "users", adminId));
+      await updateDoc(doc(db, "users", adminId), {
+        isActive: currentIsActive === false ? true : false,
+      });
       fetchData();
     } catch (err) {
       alert("Failed to delete admin: " + err.message);
@@ -143,8 +150,25 @@ export default function SuperAdminDashboard() {
           <Shield /> Super Admin
         </div>
         <nav className="nav-menu">
-          <a href="#" className="nav-item active">
+          <a
+            href="#"
+            className={`nav-item ${activeTab === "Societies" ? "active" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab("Societies");
+            }}
+          >
             <Building size={20} /> Societies
+          </a>
+          <a
+            href="#"
+            className={`nav-item ${activeTab === "Profile" ? "active" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab("Profile");
+            }}
+          >
+            <Settings size={20} /> Profile
           </a>
         </nav>
         <button
@@ -283,10 +307,18 @@ export default function SuperAdminDashboard() {
                     </td>
                     <td style={{ padding: "1rem 0" }}>
                       <button
-                        className="btn btn-danger"
-                        onClick={() => handleDeleteSubAdmin(soc.uid)}
+                        className={`btn ${soc.isActive === false ? "btn-success" : "btn-danger"}`}
+                        onClick={() =>
+                          handleToggleSubAdmin(soc.uid, soc.isActive)
+                        }
                       >
-                        <Trash2 size={16} /> Disable
+                        {soc.isActive === false ? (
+                          "Activate"
+                        ) : (
+                          <>
+                            <Trash2 size={16} /> Disable
+                          </>
+                        )}
                       </button>
                     </td>
                   </tr>
@@ -305,6 +337,8 @@ export default function SuperAdminDashboard() {
             </table>
           )}
         </div>
+
+        {activeTab === "Profile" && <EditProfile />}
       </main>
     </div>
   );

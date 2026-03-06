@@ -8,6 +8,7 @@ import {
   getDocs,
   deleteDoc,
   doc,
+  updateDoc,
 } from "firebase/firestore";
 
 export default function AdminManageResidents() {
@@ -87,6 +88,35 @@ export default function AdminManageResidents() {
       fetchResidents();
     } catch (err) {
       alert("Failed to remove resident: " + err.message);
+    }
+  };
+
+  const handleEditHouse = async (res) => {
+    const newHouseId = window.prompt(
+      "Enter new house number for " + res.name,
+      res.houseId,
+    );
+    if (!newHouseId || newHouseId === res.houseId) return;
+
+    try {
+      const q = query(
+        collection(db, "users"),
+        where("role", "==", "RESIDENT"),
+        where("houseId", "==", newHouseId),
+        where("societyCode", "==", currentUser.societyCode),
+      );
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        alert(
+          `An account already exists for House No: ${newHouseId} in this society`,
+        );
+        return;
+      }
+
+      await updateDoc(doc(db, "users", res.uid), { houseId: newHouseId });
+      fetchResidents();
+    } catch (err) {
+      alert("Error updating house number: " + err.message);
     }
   };
 
@@ -193,6 +223,13 @@ export default function AdminManageResidents() {
                 <td style={{ padding: "1rem 0" }}>{res.houseId}</td>
                 <td style={{ padding: "1rem 0" }}>{res.email}</td>
                 <td style={{ padding: "1rem 0" }}>
+                  <button
+                    className="btn btn-secondary"
+                    style={{ marginRight: "0.5rem" }}
+                    onClick={() => handleEditHouse(res)}
+                  >
+                    Edit House
+                  </button>
                   <button
                     className="btn btn-danger"
                     onClick={() => handleDelete(res.uid)}

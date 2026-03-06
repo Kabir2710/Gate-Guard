@@ -114,6 +114,10 @@ export const AppProvider = ({ children }) => {
     setCurrentUser(null);
   };
 
+  const resetPassword = async (email) => {
+    return await mockAuthService.resetPassword(email);
+  };
+
   const addEntry = async (entryData) => {
     const newId = Date.now();
     const newEntry = {
@@ -159,6 +163,7 @@ export const AppProvider = ({ children }) => {
         addEntry,
         updateEntryStatus,
         requireAdmin,
+        resetPassword,
       }}
     >
       {children}

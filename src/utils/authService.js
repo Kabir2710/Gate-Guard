@@ -3,6 +3,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import {
   doc,
@@ -99,6 +100,7 @@ export const mockAuthService = {
         email: sanitizedEmail,
         houseId: houseId || null,
         societyCode: societyCode || null,
+        isActive: true,
         createdAt: serverTimestamp(),
       };
 
@@ -214,6 +216,7 @@ export const mockAuthService = {
             email: sanitizedEmail,
             houseId: demo.houseId || null,
             societyCode: demo.societyCode || null,
+            isActive: true,
             createdAt: serverTimestamp(),
           };
           await setDoc(userDocRef, userData);
@@ -225,6 +228,12 @@ export const mockAuthService = {
         }
       }
       const userData = userDoc.data();
+
+      if (userData.isActive === false) {
+        throw new Error(
+          "Your account has been deactivated. Please contact Super Admin.",
+        );
+      }
 
       const userSession = {
         role: userData.role,
@@ -262,5 +271,21 @@ export const mockAuthService = {
     const saved = localStorage.getItem("gateGuardUser");
     if (saved) return JSON.parse(saved);
     return null;
+  },
+
+  resetPassword: async (email) => {
+    try {
+      if (!email) throw new Error("Email is required for password reset");
+      await sendPasswordResetEmail(auth, email.trim().toLowerCase());
+      return {
+        success: true,
+        message: "Password reset link sent to your email.",
+      };
+    } catch (err) {
+      if (err.code === "auth/user-not-found") {
+        throw new Error("No account found with this email.");
+      }
+      throw new Error(err.message || "Failed to send reset email");
+    }
   },
 };

@@ -6,6 +6,7 @@ import { unlockAudio } from "../utils/audio";
 
 export default function Login() {
   const [isSignup, setIsSignup] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
 
   // Form State
   const [role, setRole] = useState("RESIDENT");
@@ -18,8 +19,25 @@ export default function Login() {
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login, signup } = useAppContext();
+  const { login, signup, resetPassword } = useAppContext();
   const navigate = useNavigate();
+
+  const handleForgotPasswordSubmit = async (e) => {
+    e.preventDefault();
+    unlockAudio();
+    setError("");
+    setSuccessMsg("");
+    setLoading(true);
+    try {
+      const res = await resetPassword(email);
+      setSuccessMsg(res.message);
+      setIsForgotPassword(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -119,106 +137,156 @@ export default function Login() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          {isSignup && (
-            <>
-              <div className="form-group animate-fade-in">
-                <label className="form-label">Role</label>
-                <select
-                  className="form-select"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                >
-                  <option value="RESIDENT">Resident</option>
-                  <option value="GUARD">Security Guard</option>
-                </select>
-              </div>
-
-              <div className="form-group animate-fade-in">
-                <label className="form-label">Full Name</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g. John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="form-group animate-fade-in">
-                <label className="form-label">Society Code</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g. SOC-1234"
-                  value={societyCode}
-                  onChange={(e) => setSocietyCode(e.target.value)}
-                  required
-                />
-              </div>
-
-              {role === "RESIDENT" && (
+        {isForgotPassword ? (
+          <form onSubmit={handleForgotPasswordSubmit}>
+            <div className="form-group animate-fade-in">
+              <label className="form-label">Email Address</label>
+              <input
+                type="email"
+                className="form-input"
+                placeholder="Enter registered email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ width: "100%", marginTop: "1rem" }}
+              disabled={loading}
+            >
+              {loading ? "Sending..." : "Send Reset Link"}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            {isSignup && (
+              <>
                 <div className="form-group animate-fade-in">
-                  <label className="form-label">House Number</label>
+                  <label className="form-label">Role</label>
+                  <select
+                    className="form-select"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                  >
+                    <option value="RESIDENT">Resident</option>
+                    <option value="GUARD">Security Guard</option>
+                  </select>
+                </div>
+
+                <div className="form-group animate-fade-in">
+                  <label className="form-label">Full Name</label>
                   <input
                     type="text"
                     className="form-input"
-                    value={houseId}
-                    onChange={(e) => setHouseId(e.target.value)}
-                    placeholder="e.g. 101"
+                    placeholder="e.g. John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     required
                   />
                 </div>
-              )}
-            </>
-          )}
 
-          <div className="form-group animate-fade-in">
-            <label className="form-label">Email Address</label>
-            <input
-              type="email"
-              className="form-input"
-              placeholder="e.g. user@domain.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+                <div className="form-group animate-fade-in">
+                  <label className="form-label">Society Code</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. SOC-1234"
+                    value={societyCode}
+                    onChange={(e) => setSocietyCode(e.target.value)}
+                    required
+                  />
+                </div>
 
-          <div className="form-group animate-fade-in">
-            <label className="form-label">Password</label>
-            <input
-              type="password"
-              className="form-input"
-              placeholder={
-                isSignup ? "Create a strong password" : "Enter password"
-              }
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+                {role === "RESIDENT" && (
+                  <div className="form-group animate-fade-in">
+                    <label className="form-label">House Number</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={houseId}
+                      onChange={(e) => setHouseId(e.target.value)}
+                      placeholder="e.g. 101"
+                      required
+                    />
+                  </div>
+                )}
+              </>
+            )}
 
-          <button
-            type="submit"
-            className="btn btn-primary"
-            style={{ width: "100%", marginTop: "1rem" }}
-            disabled={loading}
-          >
-            {loading
-              ? "Processing..."
-              : isSignup
-                ? "Register Account"
-                : "Secure Login"}
-          </button>
-        </form>
+            <div className="form-group animate-fade-in">
+              <label className="form-label">Email Address</label>
+              <input
+                type="email"
+                className="form-input"
+                placeholder="e.g. user@domain.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group animate-fade-in">
+              <label className="form-label">Password</label>
+              <input
+                type="password"
+                className="form-input"
+                placeholder={
+                  isSignup ? "Create a strong password" : "Enter password"
+                }
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ width: "100%", marginTop: "1rem" }}
+              disabled={loading}
+            >
+              {loading
+                ? "Processing..."
+                : isSignup
+                  ? "Register Account"
+                  : "Secure Login"}
+            </button>
+          </form>
+        )}
 
         <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+          {!isForgotPassword && !isSignup && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsForgotPassword(true);
+                setError("");
+                setSuccessMsg("");
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--primary)",
+                cursor: "pointer",
+                textDecoration: "underline",
+                display: "block",
+                margin: "0 auto 1rem auto",
+              }}
+            >
+              Forgot Password?
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => {
-              setIsSignup(!isSignup);
+              if (isForgotPassword) {
+                setIsForgotPassword(false);
+              } else {
+                setIsSignup(!isSignup);
+              }
               setError("");
               setSuccessMsg("");
             }}
@@ -230,9 +298,11 @@ export default function Login() {
               textDecoration: "underline",
             }}
           >
-            {isSignup
-              ? "Already have an account? Log in."
-              : "Don't have an account? Sign up."}
+            {isForgotPassword
+              ? "Back to Login"
+              : isSignup
+                ? "Already have an account? Log in."
+                : "Don't have an account? Sign up."}
           </button>
         </div>
 

@@ -7,10 +7,12 @@ import {
   ShieldCheck,
   FileText,
   Menu,
+  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import GuardDutyLog from "../components/GuardDutyLog";
 import GuardGuidelines from "../components/GuardGuidelines";
+import EditProfile from "../components/EditProfile";
 
 export default function GuardDashboard() {
   const { currentUser, entries, logout, addEntry } = useAppContext();
@@ -87,6 +89,17 @@ export default function GuardDashboard() {
             }}
           >
             <FileText size={20} /> Guidelines
+          </a>
+          <a
+            href="#"
+            className={`nav-item ${activeTab === "Profile" ? "active" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab("Profile");
+              setSidebarOpen(false);
+            }}
+          >
+            <Settings size={20} /> Profile
           </a>
         </nav>
         <button
@@ -254,6 +267,7 @@ export default function GuardDashboard() {
 
         {activeTab === "Duty Log" && <GuardDutyLog />}
         {activeTab === "Guidelines" && <GuardGuidelines />}
+        {activeTab === "Profile" && <EditProfile />}
       </main>
     </div>
   );

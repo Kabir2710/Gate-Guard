@@ -8,10 +8,12 @@ import {
   User,
   Bell,
   Menu,
+  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import ResidentVisitorLog from "../components/ResidentVisitorLog";
+import EditProfile from "../components/EditProfile";
 import { playNotificationSound } from "../utils/audio";
 
 export default function ResidentDashboard() {
@@ -106,6 +108,17 @@ export default function ResidentDashboard() {
             }}
           >
             <User size={20} /> Visitors Log
+          </a>
+          <a
+            href="#"
+            className={`nav-item ${activeTab === "Profile" ? "active" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab("Profile");
+              setSidebarOpen(false);
+            }}
+          >
+            <Settings size={20} /> Profile
           </a>
         </nav>
         <button
@@ -275,6 +288,8 @@ export default function ResidentDashboard() {
         )}
 
         {activeTab === "Visitors Log" && <ResidentVisitorLog />}
+
+        {activeTab === "Profile" && <EditProfile />}
       </main>
     </div>
   );
