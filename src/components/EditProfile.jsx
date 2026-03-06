@@ -5,7 +5,7 @@ import { verifyBeforeUpdateEmail, updatePassword } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 
 export default function EditProfile() {
-  const { currentUser } = useAppContext();
+  const { currentUser, setCurrentUser } = useAppContext();
   const [name, setName] = useState(currentUser?.name || "");
   const [email, setEmail] = useState(currentUser?.email || "");
   const [password, setPassword] = useState("");
@@ -57,6 +57,7 @@ export default function EditProfile() {
         saved.name = name;
         saved.email = sanitizedEmail;
         localStorage.setItem("gateGuardUser", JSON.stringify(saved));
+        setCurrentUser(saved);
       }
 
       setSuccess(

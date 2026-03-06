@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAppContext } from "../AppContext";
 
 export default function AdminEntryLogs() {
-  const { entries, requireAdmin } = useAppContext();
+  const { entries, requireAdmin, currentUser } = useAppContext();
   const [filters, setFilters] = useState({
     date: "",
     houseNo: "",
@@ -15,6 +15,8 @@ export default function AdminEntryLogs() {
   };
 
   const filteredLogs = entries.filter((log) => {
+    if (log.societyCode !== currentUser?.societyCode) return false;
+
     const matchHouse = filters.houseNo
       ? log.houseId.includes(filters.houseNo)
       : true;

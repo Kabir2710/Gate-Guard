@@ -3,11 +3,15 @@ import { useAppContext } from "../AppContext";
 import { useExtensionContext } from "../ExtensionContext";
 
 export default function GuardDutyLog() {
-  const { entries } = useAppContext();
+  const { entries, currentUser } = useAppContext();
   const { deletedLogs, softDeleteLog } = useExtensionContext();
 
   // Filter out any logs the guard has softly deleted
-  const visibleLogs = entries.filter((log) => !deletedLogs.includes(log.id));
+  const visibleLogs = entries.filter(
+    (log) =>
+      !deletedLogs.includes(log.id) &&
+      log.societyCode === currentUser?.societyCode,
+  );
 
   return (
     <div className="card animate-fade-in" style={{ padding: "2rem" }}>

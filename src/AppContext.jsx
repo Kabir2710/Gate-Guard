@@ -164,6 +164,7 @@ export const AppProvider = ({ children }) => {
         updateEntryStatus,
         requireAdmin,
         resetPassword,
+        setCurrentUser,
       }}
     >
       {children}

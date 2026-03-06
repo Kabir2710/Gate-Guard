@@ -5,7 +5,11 @@ export default function ResidentVisitorLog() {
   const { entries, currentUser } = useAppContext();
   const [dateFilter, setDateFilter] = useState("");
 
-  const myEntries = entries.filter((e) => e.houseId === currentUser?.houseId);
+  const myEntries = entries.filter(
+    (e) =>
+      e.houseId === currentUser?.houseId &&
+      e.societyCode === currentUser?.societyCode,
+  );
 
   const filteredLogs = myEntries.filter((log) => {
     if (!dateFilter) return true;
