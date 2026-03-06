@@ -8,10 +8,11 @@ export default function Login() {
   const [isSignup, setIsSignup] = useState(false);
 
   // Form State
-  const [role, setRole] = useState("ADMIN");
+  const [role, setRole] = useState("RESIDENT");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [houseId, setHouseId] = useState("");
+  const [societyCode, setSocietyCode] = useState("");
   const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
@@ -34,8 +35,16 @@ export default function Login() {
           throw new Error("Please fill in all required fields");
         if (role === "RESIDENT" && !houseId)
           throw new Error("House ID required for Residents");
+        if (!societyCode) throw new Error("Society Code is required");
 
-        const res = await signup(role, name, email, password, houseId);
+        const res = await signup(
+          role,
+          name,
+          email,
+          password,
+          houseId,
+          societyCode,
+        );
         setSuccessMsg(res.message);
         setIsSignup(false); // Switch to login view
         setPassword(""); // Clear password for login
@@ -120,9 +129,8 @@ export default function Login() {
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                 >
-                  <option value="ADMIN">System Admin</option>
-                  <option value="GUARD">Security Guard</option>
                   <option value="RESIDENT">Resident</option>
+                  <option value="GUARD">Security Guard</option>
                 </select>
               </div>
 
@@ -134,6 +142,18 @@ export default function Login() {
                   placeholder="e.g. John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group animate-fade-in">
+                <label className="form-label">Society Code</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. SOC-1234"
+                  value={societyCode}
+                  onChange={(e) => setSocietyCode(e.target.value)}
                   required
                 />
               </div>
@@ -226,6 +246,7 @@ export default function Login() {
         >
           {!isSignup && (
             <>
+              <p>Demo SuperAdmin: admin@gmail.com / Admin@123</p>
               <p>Demo Admin: admin@system.com / admin123</p>
               <p>Demo Guard: rakesh@guard.com / guard123</p>
               <p>Demo Res (101): resi101@society.com / resident123</p>

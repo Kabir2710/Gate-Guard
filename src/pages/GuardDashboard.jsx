@@ -33,12 +33,14 @@ export default function GuardDashboard() {
   const handleNewEntry = (e) => {
     e.preventDefault();
     if (!formData.guestName || !formData.houseId) return;
-    addEntry(formData);
+    addEntry({ ...formData, societyCode: currentUser?.societyCode });
     setFormData({ guestName: "", mobile: "", houseId: "", purpose: "" });
   };
 
   // Active entries (PENDING or approved/rejected recently)
-  const activeEntries = entries.slice(0, 10);
+  const activeEntries = entries
+    .filter((e) => e.societyCode === currentUser?.societyCode)
+    .slice(0, 10);
 
   return (
     <div className="dashboard-layout">
@@ -112,8 +114,10 @@ export default function GuardDashboard() {
               </p>
             </div>
           </div>
-          <div className="user-profile">
-            <div className="avatar">G</div>
+          <div className="flex-center header-actions" style={{ gap: "1rem" }}>
+            <div className="user-profile">
+              <div className="avatar">G</div>
+            </div>
           </div>
         </header>
 

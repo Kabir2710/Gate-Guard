@@ -1,4 +1,4 @@
-import { auth, db } from "../firebase";
+import { auth, db, secondaryAuth } from "../firebase";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -16,12 +16,22 @@ import {
 } from "firebase/firestore";
 
 export const mockAuthService = {
-  signup: async (role, name, email, password, houseId) => {
+  signup: async (
+    role,
+    name,
+    email,
+    password,
+    houseId,
+    societyCode,
+    createdByAdmin = false,
+  ) => {
     try {
       if (!role || !name || !email || !password)
         throw new Error("All fields are required");
       if (role === "RESIDENT" && !houseId)
         throw new Error("House ID is required for Residents");
+      if (role !== "ADMIN" && role !== "SUPERADMIN" && !societyCode)
+        throw new Error("Society Code is required");
 
       const sanitizedEmail = email.trim().toLowerCase();
 
@@ -59,16 +69,20 @@ export const mockAuthService = {
           usersRef,
           where("role", "==", "RESIDENT"),
           where("houseId", "==", houseId),
+          where("societyCode", "==", societyCode),
         );
         const houseSnapshot = await getDocs(houseQ);
         if (!houseSnapshot.empty && !isDemoAccount) {
-          throw new Error(`An account already exists for House No: ${houseId}`);
+          throw new Error(
+            `An account already exists for House No: ${houseId} in this society`,
+          );
         }
       }
 
       // Create in Firebase Auth
+      const authInstance = createdByAdmin ? secondaryAuth : auth;
       const userCredential = await createUserWithEmailAndPassword(
-        auth,
+        authInstance,
         sanitizedEmail,
         password,
       );
@@ -84,6 +98,7 @@ export const mockAuthService = {
         name: name.trim(),
         email: sanitizedEmail,
         houseId: houseId || null,
+        societyCode: societyCode || null,
         createdAt: serverTimestamp(),
       };
 
@@ -103,6 +118,22 @@ export const mockAuthService = {
 
   login: async (email, password) => {
     try {
+      if (email === "admin@gmail.com" && password === "Admin@123") {
+        const superadminSession = {
+          role: "SUPERADMIN",
+          id: "SA1",
+          uid: "SUPERADMIN_MOCK_UID",
+          name: "Super Admin",
+          houseId: null,
+          societyCode: "ALL",
+        };
+        localStorage.setItem(
+          "gateGuardUser",
+          JSON.stringify(superadminSession),
+        );
+        return { user: superadminSession };
+      }
+
       const sanitizedEmail = email.trim().toLowerCase();
 
       // Auto-provision demo accounts in Firebase if they don't exist
@@ -112,18 +143,21 @@ export const mockAuthService = {
           name: "Demo Admin",
           pass: "admin123",
           houseId: null,
+          societyCode: "DEMO101",
         },
         "rakesh@guard.com": {
           role: "GUARD",
           name: "Rakesh Guard",
           pass: "guard123",
           houseId: null,
+          societyCode: "DEMO101",
         },
         "resi101@society.com": {
           role: "RESIDENT",
           name: "Resident 101",
           pass: "resident123",
           houseId: "101",
+          societyCode: "DEMO101",
         },
       };
 
@@ -146,6 +180,7 @@ export const mockAuthService = {
               sanitizedEmail,
               password,
               demo.houseId,
+              demo.societyCode,
             );
             // Re-authenticate after successful signup to ensure auth state is valid
             await signInWithEmailAndPassword(auth, sanitizedEmail, password);
@@ -178,6 +213,7 @@ export const mockAuthService = {
             name: demo.name,
             email: sanitizedEmail,
             houseId: demo.houseId || null,
+            societyCode: demo.societyCode || null,
             createdAt: serverTimestamp(),
           };
           await setDoc(userDocRef, userData);
@@ -196,6 +232,7 @@ export const mockAuthService = {
         uid: firebaseUser.uid,
         name: userData.name,
         houseId: userData.houseId,
+        societyCode: userData.societyCode || null,
       };
 
       // Set localStorage session for synchronous AppContext re-hydration

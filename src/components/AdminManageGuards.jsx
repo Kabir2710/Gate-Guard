@@ -10,9 +10,9 @@ import {
   doc,
 } from "firebase/firestore";
 
-export default function AdminManageResidents() {
+export default function AdminManageGuards() {
   const { currentUser, signup } = useAppContext();
-  const [residents, setResidents] = useState([]);
+  const [guards, setGuards] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Form State
@@ -20,11 +20,10 @@ export default function AdminManageResidents() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [houseId, setHouseId] = useState("");
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchResidents = async () => {
+  const fetchGuards = async () => {
     setLoading(true);
     try {
       if (!currentUser?.societyCode) return;
@@ -32,7 +31,7 @@ export default function AdminManageResidents() {
       const usersRef = collection(db, "users");
       const q = query(
         usersRef,
-        where("role", "==", "RESIDENT"),
+        where("role", "==", "GUARD"),
         where("societyCode", "==", currentUser.societyCode),
       );
 
@@ -40,16 +39,16 @@ export default function AdminManageResidents() {
       const data = [];
       snapshot.forEach((doc) => data.push(doc.data()));
 
-      setResidents(data);
+      setGuards(data);
     } catch (err) {
-      console.error("Error fetching residents:", err);
+      console.error("Error fetching guards:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchResidents();
+    fetchGuards();
   }, [currentUser]);
 
   const handleCreate = async (e) => {
@@ -58,20 +57,19 @@ export default function AdminManageResidents() {
     setFormLoading(true);
     try {
       await signup(
-        "RESIDENT",
+        "GUARD",
         name,
         email,
         password,
-        houseId,
+        null,
         currentUser.societyCode,
         true,
       );
       setName("");
       setEmail("");
       setPassword("");
-      setHouseId("");
       setShowForm(false);
-      fetchResidents();
+      fetchGuards();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -79,30 +77,29 @@ export default function AdminManageResidents() {
     }
   };
 
-  const handleDelete = async (resId) => {
-    if (!window.confirm("Are you sure you want to remove this resident?"))
-      return;
+  const handleDelete = async (guardId) => {
+    if (!window.confirm("Are you sure you want to remove this guard?")) return;
     try {
-      await deleteDoc(doc(db, "users", resId));
-      fetchResidents();
+      await deleteDoc(doc(db, "users", guardId));
+      fetchGuards();
     } catch (err) {
-      alert("Failed to remove resident: " + err.message);
+      alert("Failed to remove guard: " + err.message);
     }
   };
 
   return (
     <div className="card animate-fade-in" style={{ padding: "2rem" }}>
       <div className="flex-between" style={{ marginBottom: "1rem" }}>
-        <h2>Manage Residents</h2>
+        <h2>Manage Guards</h2>
         <button
           className="btn btn-primary"
           onClick={() => setShowForm(!showForm)}
         >
-          {showForm ? "Cancel" : "Add Resident"}
+          {showForm ? "Cancel" : "Add Guard"}
         </button>
       </div>
       <p style={{ marginBottom: "2rem", color: "var(--text-muted)" }}>
-        Real-time view of residents registered in your society (
+        Real-time view of security guards registered in your society (
         {currentUser?.societyCode}).
       </p>
 
@@ -142,27 +139,19 @@ export default function AdminManageResidents() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <input
-            required
-            type="text"
-            className="form-input"
-            placeholder="House ID"
-            value={houseId}
-            onChange={(e) => setHouseId(e.target.value)}
-          />
           <button
             type="submit"
             className="btn btn-primary"
             disabled={formLoading}
             style={{ gridColumn: "1 / -1" }}
           >
-            {formLoading ? "Adding..." : "Add Resident"}
+            {formLoading ? "Adding..." : "Add Guard"}
           </button>
         </form>
       )}
 
       {loading ? (
-        <p>Loading residents...</p>
+        <p>Loading guards...</p>
       ) : (
         <table
           style={{
@@ -173,42 +162,40 @@ export default function AdminManageResidents() {
         >
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border)" }}>
-              <th style={{ padding: "1rem 0" }}>Resident Name</th>
-              <th style={{ padding: "1rem 0" }}>House ID</th>
+              <th style={{ padding: "1rem 0" }}>Guard Name</th>
               <th style={{ padding: "1rem 0" }}>Email</th>
               <th style={{ padding: "1rem 0" }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {residents.map((res) => (
+            {guards.map((guard) => (
               <tr
-                key={res.uid}
+                key={guard.uid}
                 style={{
                   borderBottom: "1px solid var(--border)",
                 }}
               >
                 <td style={{ padding: "1rem 0", fontWeight: "500" }}>
-                  {res.name}
+                  {guard.name}
                 </td>
-                <td style={{ padding: "1rem 0" }}>{res.houseId}</td>
-                <td style={{ padding: "1rem 0" }}>{res.email}</td>
+                <td style={{ padding: "1rem 0" }}>{guard.email}</td>
                 <td style={{ padding: "1rem 0" }}>
                   <button
                     className="btn btn-danger"
-                    onClick={() => handleDelete(res.uid)}
+                    onClick={() => handleDelete(guard.uid)}
                   >
                     Remove
                   </button>
                 </td>
               </tr>
             ))}
-            {residents.length === 0 && (
+            {guards.length === 0 && (
               <tr>
                 <td
-                  colSpan="4"
+                  colSpan="3"
                   style={{ padding: "1rem 0", textAlign: "center" }}
                 >
-                  No residents registered yet.
+                  No guards registered yet.
                 </td>
               </tr>
             )}

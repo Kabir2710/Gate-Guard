@@ -71,7 +71,15 @@ export const AppProvider = ({ children }) => {
     return true;
   };
 
-  const signup = async (role, name, email, password, houseId) => {
+  const signup = async (
+    role,
+    name,
+    email,
+    password,
+    houseId,
+    societyCode,
+    createdByAdmin = false,
+  ) => {
     try {
       const response = await mockAuthService.signup(
         role,
@@ -79,6 +87,8 @@ export const AppProvider = ({ children }) => {
         email,
         password,
         houseId,
+        societyCode,
+        createdByAdmin,
       );
       return response;
     } catch (err) {

@@ -13,9 +13,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import AdminEntryLogs from "../components/AdminEntryLogs";
 import AdminGuidelines from "../components/AdminGuidelines";
+import AdminManageResidents from "../components/AdminManageResidents";
+import AdminManageGuards from "../components/AdminManageGuards";
 
 export default function AdminDashboard() {
-  const { entries, logout, requireAdmin } = useAppContext();
+  const { entries, logout, requireAdmin, currentUser } = useAppContext();
   const navigate = useNavigate();
   const [filterQuery, setFilterQuery] = useState("");
   const [activeTab, setActiveTab] = useState("Overview");
@@ -26,7 +28,11 @@ export default function AdminDashboard() {
     navigate("/");
   };
 
-  const filteredEntries = entries.filter(
+  const societyEntries = entries.filter(
+    (e) => e.societyCode === currentUser?.societyCode,
+  );
+
+  const filteredEntries = societyEntries.filter(
     (e) =>
       e.guestName.toLowerCase().includes(filterQuery.toLowerCase()) ||
       e.houseId.includes(filterQuery),
@@ -68,6 +74,28 @@ export default function AdminDashboard() {
             <DoorOpen size={20} /> Entry Logs
           </a>
 
+          <a
+            href="#"
+            className={`nav-item ${activeTab === "Residents" ? "active" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab("Residents");
+              setSidebarOpen(false);
+            }}
+          >
+            <Database size={20} /> Manage Residents
+          </a>
+          <a
+            href="#"
+            className={`nav-item ${activeTab === "Guards" ? "active" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab("Guards");
+              setSidebarOpen(false);
+            }}
+          >
+            <Database size={20} /> Manage Guards
+          </a>
           <a
             href="#"
             className={`nav-item ${activeTab === "Guidelines" ? "active" : ""}`}
@@ -136,7 +164,7 @@ export default function AdminDashboard() {
                 style={{ flexDirection: "column", padding: "2rem" }}
               >
                 <h2 style={{ fontSize: "2.5rem", color: "var(--primary)" }}>
-                  {entries.length}
+                  {societyEntries.length}
                 </h2>
                 <p style={{ fontWeight: "600" }}>Total Entries</p>
               </div>
@@ -149,7 +177,7 @@ export default function AdminDashboard() {
                 }}
               >
                 <h2 style={{ fontSize: "2.5rem", color: "var(--warning)" }}>
-                  {entries.filter((e) => e.status === "PENDING").length}
+                  {societyEntries.filter((e) => e.status === "PENDING").length}
                 </h2>
                 <p style={{ fontWeight: "600" }}>Pending Approvals</p>
               </div>
@@ -162,7 +190,7 @@ export default function AdminDashboard() {
                 }}
               >
                 <h2 style={{ fontSize: "2.5rem", color: "var(--success)" }}>
-                  {entries.filter((e) => e.status === "APPROVED").length}
+                  {societyEntries.filter((e) => e.status === "APPROVED").length}
                 </h2>
                 <p style={{ fontWeight: "600" }}>Approved Visitors</p>
               </div>
@@ -254,6 +282,10 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === "Logs" && <AdminEntryLogs />}
+
+        {activeTab === "Residents" && <AdminManageResidents />}
+
+        {activeTab === "Guards" && <AdminManageGuards />}
 
         {activeTab === "Guidelines" && <AdminGuidelines />}
       </main>
