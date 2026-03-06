@@ -38,20 +38,33 @@ export default function ResidentDashboard() {
 
       // Native Browser Notification
       if ("Notification" in window) {
-        if (Notification.permission === "granted") {
-          new Notification("New Visitor Alert", {
-            body: `You have ${pendingRequests.length} guest(s) waiting at the gate for approval.`,
-            icon: "/favicon.ico",
-          });
-        } else if (Notification.permission !== "denied") {
-          Notification.requestPermission().then((permission) => {
-            if (permission === "granted") {
-              new Notification("New Visitor Alert", {
-                body: `You have ${pendingRequests.length} guest(s) waiting at the gate for approval.`,
-                icon: "/favicon.ico",
-              });
-            }
-          });
+        try {
+          if (Notification.permission === "granted") {
+            new Notification("New Visitor Alert", {
+              body: `You have ${pendingRequests.length} guest(s) waiting at the gate for approval.`,
+              icon: "/favicon.ico",
+            });
+          } else if (Notification.permission !== "denied") {
+            Notification.requestPermission()
+              .then((permission) => {
+                try {
+                  if (permission === "granted") {
+                    new Notification("New Visitor Alert", {
+                      body: `You have ${pendingRequests.length} guest(s) waiting at the gate for approval.`,
+                      icon: "/favicon.ico",
+                    });
+                  }
+                } catch (e) {
+                  console.warn("Async notification error:", e);
+                }
+              })
+              .catch((err) => console.warn("Permission request failed:", err));
+          }
+        } catch (err) {
+          console.warn(
+            "Native notification not supported in this browser environment:",
+            err,
+          );
         }
       }
     }
